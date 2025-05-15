@@ -1,26 +1,26 @@
 require('dotenv').config();
 const twilio = require('twilio');
 
-const accountSid = process.env.TWILIO_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 
-const client = twilio(accountSid, authToken);
-
-
-const sendWhatsApp = async (to, otp) => {
+const sendWhatsApp = async (to, code) => {
   try {
-    console.log('[DEBUG] Enviando WhatsApp usando plantilla');
-
     await client.messages.create({
-      from: 'whatsapp:+12792375335',
+      from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`, // +14155238886
       to: `whatsapp:${to}`,
-      body: `Tu código de verificación es: ${otp}`
+      contentSid: process.env.TWILIO_TEMPLATE_SID_OTP,
+      contentVariables: JSON.stringify({
+        "1": code
+      })
     });
-    
 
-    console.log(`✅ Mensaje WhatsApp enviado a ${to}`);
+    console.log(`✅ OTP enviado por WhatsApp a ${to}: ${code}`);
   } catch (error) {
-    console.error('❌ Error enviando WhatsApp:', error?.response?.data || error.message);
+    console.error('❌ Error enviando WhatsApp:', error.message);
+    throw new Error('No se pudo enviar el código por WhatsApp');
   }
 };
 
