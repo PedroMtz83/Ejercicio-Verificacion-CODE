@@ -1,20 +1,28 @@
-const mongoose = require('mongoose');
+const codes = [];
 
-const authCodeSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'User'
+module.exports = {
+  create: ({ userId, code }) => {
+    // Elimina código anterior del mismo usuario
+    const index = codes.findIndex(c => c.userId === userId);
+    if (index !== -1) codes.splice(index, 1);
+
+    codes.push({
+      userId,
+      code,
+      createdAt: new Date()
+    });
   },
-  code: {
-    type: String,
-    required: true
-  }
-}, {
-  timestamps: true
-});
 
-// limpieza automática de códigos expirados
-authCodeSchema.index({ createdAt: 1 }, { expireAfterSeconds: 300 }); // 5 minutos
+  findOne: ({ userId, code }) => {
+    return codes.find(c => c.userId === userId && c.code === code);
+  },
 
-module.exports = mongoose.model('AuthCode', authCodeSchema);
+  deleteOne: ({ userId }) => {
+    const index = codes.findIndex(c => c.userId === userId);
+    if (index !== -1) {
+      codes.splice(index, 1);
+    }
+  },
+
+  getAll: () => codes
+};
