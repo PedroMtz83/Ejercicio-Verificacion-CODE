@@ -1,23 +1,30 @@
-const mongoose = require('mongoose');
+const users = [];
 
-const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true
-  },
-  phone: {
-    type: String,
-    trim: true
-  },
-  isVerified: {
-    type: Boolean,
-    default: false
-  }
-}, {
-  timestamps: true
-});
+const generateId = () => Math.random().toString(36).substring(2, 10);
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = {
+  findOne: ({ email }) => {
+    return users.find(user => user.email === email);
+  },
+
+  create: ({ email, phone }) => {
+    const newUser = {
+      id: generateId(),
+      email,
+      phone,
+      isVerified: false
+    };
+    users.push(newUser);
+    return newUser;
+  },
+
+  updateVerification: (email) => {
+    const user = users.find(u => u.email === email);
+    if (user) {
+      user.isVerified = true;
+    }
+    return user;
+  },
+
+  getAll: () => users
+};
